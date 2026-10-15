@@ -1,4 +1,4 @@
-const CACHE_NAME = "carepath-cache-v2";
+const CACHE_NAME = "carepath-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
