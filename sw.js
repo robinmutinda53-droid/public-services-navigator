@@ -1,9 +1,13 @@
-const CACHE_NAME = "psn-cache-v1";
+const CACHE_NAME = "carepath-cache-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./app.js"
+  "./app.js",
+  "./auth.js",
+  "./assistant.js",
+  "./config.js",
+  "./favicon.svg"
 ];
 
 self.addEventListener("install", (event) => {

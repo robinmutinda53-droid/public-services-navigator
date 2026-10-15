@@ -559,6 +559,11 @@ ui.locateButton.addEventListener("click", () => {
 ui.reportForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  if (!window.PSNAuth.isAuthenticated()) {
+    ui.reportMessage.textContent = "Sign in to submit a report. Your email will not be shown with it.";
+    return;
+  }
+
   const facilityId = Number(ui.reportFacility.value);
   const service = ui.reportService.value;
   const status = ui.reportStatus.value;
@@ -602,10 +607,21 @@ window.addEventListener("offline", () => {
   ui.locationMessage.textContent = "You are offline. The app will keep working with cached data.";
 });
 
-populateReportFacilityOptions();
-applyTheme();
-renderSuggestions();
-renderStats();
-renderFacilities();
-initMap();
-applyOfflineSupport();
+let applicationInitialized = false;
+
+function initializeApplication() {
+  if (applicationInitialized) return;
+  applicationInitialized = true;
+  populateReportFacilityOptions();
+  applyTheme();
+  renderSuggestions();
+  renderStats();
+  renderFacilities();
+  initMap();
+  applyOfflineSupport();
+}
+
+window.addEventListener("psn:app-ready", initializeApplication);
+if (!document.getElementById("app-shell").hidden) {
+  initializeApplication();
+}

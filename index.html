@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f766e" />
-  <meta name="description" content="Find health facilities and explore reported services in Kenya." />
-  <title>Public Services Navigator | PSN</title>
+  <meta name="theme-color" content="#087e78" />
+  <meta name="description" content="A privacy-conscious guide to exploring health services in Kenya." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <title>CarePath | Kenya Health Navigator</title>
   <link rel="stylesheet" href="styles.css" />
   <link
     rel="stylesheet"
@@ -15,20 +16,94 @@
     defer
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
   </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="auth.js"></script>
   <script defer src="app.js"></script>
+  <script defer src="assistant.js"></script>
 </head>
 <body>
+  <section id="auth-screen" class="auth-screen" aria-labelledby="auth-title">
+    <div class="auth-brand">
+      <a class="brand" href="#" aria-label="CarePath home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" focusable="false"><path d="M20 7h8v13h13v8H28v13h-8V28H7v-8h13z" /></svg>
+        </span>
+        <span>CarePath <small>Kenya Health Navigator</small></span>
+      </a>
+      <span class="auth-secure"><span aria-hidden="true">●</span> Private by design</span>
+    </div>
+
+    <div class="auth-layout">
+      <section class="auth-intro">
+        <span class="auth-kicker"><span aria-hidden="true">✳</span> CARE, CLOSER TO YOU</span>
+        <h1>Finding the right care should feel simpler.</h1>
+        <p>Explore nearby health services, understand your options, and get helpful guidance along the way.</p>
+        <div class="care-illustration" aria-hidden="true">
+          <div class="illustration-sun"></div>
+          <div class="illustration-building">
+            <div class="building-cross">+</div>
+            <div class="building-windows"><i></i><i></i><i></i></div>
+            <div class="building-door"></div>
+          </div>
+          <div class="illustration-ground"></div>
+          <span class="illustration-heart">♡</span>
+          <span class="illustration-spark spark-one">✦</span>
+          <span class="illustration-spark spark-two">✦</span>
+        </div>
+        <div class="auth-promise">
+          <span class="promise-icon" aria-hidden="true">✓</span>
+          <p><strong>Your email stays private.</strong><br />It is used only to sign in, never shown on your profile or reports.</p>
+        </div>
+      </section>
+
+      <section class="auth-card" aria-label="Sign in">
+        <div class="auth-card-heading">
+          <span class="auth-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false"><path d="M20 7h8v13h13v8H28v13h-8V28H7v-8h13z" /></svg>
+          </span>
+          <p class="eyebrow">WELCOME TO CAREPATH</p>
+          <h2 id="auth-title">Your care journey, supported.</h2>
+          <p class="auth-card-copy">Sign in or create an account to share a service update. Your identity stays private to other visitors.</p>
+        </div>
+
+        <form id="auth-form" class="auth-form">
+          <label class="field-label" for="auth-email">Email address</label>
+          <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          <label class="field-label" for="auth-password">Password</label>
+          <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" placeholder="At least 8 characters" required />
+          <button id="auth-submit" class="auth-submit" type="submit">Sign in securely <span aria-hidden="true">→</span></button>
+          <button id="auth-mode-toggle" class="auth-mode-toggle" type="button">New here? <strong>Create an account</strong></button>
+          <button id="auth-reset" class="auth-reset" type="button">Forgot your password?</button>
+          <p id="auth-message" class="auth-message" role="status" aria-live="polite"></p>
+        </form>
+
+        <div id="auth-setup-note" class="auth-setup-note" hidden>
+          <strong>Sign-in setup is not connected yet.</strong>
+          <span>You can explore the public demo below. Account features will be available after the project owner connects Supabase.</span>
+        </div>
+        <button id="guest-button" class="guest-button" type="button">Explore the public directory <span aria-hidden="true">→</span></button>
+        <p class="auth-disclaimer">Demo health information only. Not a substitute for professional medical advice.</p>
+      </section>
+    </div>
+    <footer class="auth-footer"><span>CarePath · Public Services Navigator</span><span>Made for easier access to care in Kenya</span></footer>
+  </section>
+
+  <div id="app-shell" hidden>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="PSN home">
-      <span class="brand-icon">✚</span>
-      <span>PSN <small>Public Services Navigator</small></span>
+    <a class="brand" href="#" aria-label="CarePath home">
+      <span class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" focusable="false"><path d="M20 7h8v13h13v8H28v13h-8V28H7v-8h13z" /></svg>
+      </span>
+      <span>CarePath <small>Kenya Health Navigator</small></span>
     </a>
     <div class="topbar-actions">
+      <span id="account-status" class="account-status" hidden><span aria-hidden="true">●</span> Private session</span>
+      <button id="auth-action" class="auth-action" type="button">Sign in</button>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
-      <span class="status"><span></span> Community health directory</span>
+      <span class="status"><span></span> Health services directory</span>
     </div>
   </header>
-
   <main class="container">
     <section class="hero">
       <p class="eyebrow">HEALTHCARE ACCESS IN KENYA</p>
@@ -149,6 +224,7 @@
           Help other people by reporting what you observed at a facility.
           Reports are community-submitted and are not official confirmation.
         </p>
+        <p class="privacy-note"><strong>Your identity stays private.</strong> Your email is never attached to a displayed report. Reports in this demo are saved only in this browser.</p>
       </div>
 
       <form id="report-form" class="report-form">
@@ -181,8 +257,8 @@
     </section>
 
     <footer class="footer">
-      <span>PSN · Public Services Navigator</span>
-      <span>Prototype for healthcare access in Kenya</span>
+      <span>CarePath · Public Services Navigator</span>
+      <span>Demonstration directory · Confirm details before travelling</span>
     </footer>
   </main>
 
@@ -190,5 +266,30 @@
     <button id="close-dialog" class="close-button" type="button" aria-label="Close details">×</button>
     <div id="facility-details"></div>
   </dialog>
+  <button id="assistant-launcher" class="assistant-launcher" type="button" aria-controls="assistant-panel" aria-expanded="false">
+    <span class="assistant-launcher-icon" aria-hidden="true">✦</span><span>Ask CarePath</span>
+  </button>
+  <section id="assistant-panel" class="assistant-panel" aria-label="CarePath navigator assistant" hidden>
+    <header class="assistant-header">
+      <span class="assistant-avatar" aria-hidden="true">✚</span>
+      <div><h2>CarePath guide</h2><p id="assistant-status">Here to help you find your way</p></div>
+      <button id="assistant-close" class="assistant-close" type="button" aria-label="Close assistant">×</button>
+    </header>
+    <div id="assistant-messages" class="assistant-messages" aria-live="polite">
+      <p class="assistant-bubble assistant-reply">Hi! I can help you search the directory, find nearby facilities, use filters, and understand community updates. What would you like to do?</p>
+    </div>
+    <div class="assistant-suggestions" aria-label="Suggested questions">
+      <button type="button" data-assistant-prompt="How do I find nearby facilities?">Find nearby care</button>
+      <button type="button" data-assistant-prompt="How do I filter by a service?">Filter services</button>
+      <button type="button" data-assistant-prompt="How do community reports work?">Community reports</button>
+    </div>
+    <form id="assistant-form" class="assistant-form">
+      <label class="visually-hidden" for="assistant-input">Ask how to use CarePath</label>
+      <input id="assistant-input" type="text" maxlength="1000" placeholder="Ask how to use CarePath..." autocomplete="off" required />
+      <button type="submit" aria-label="Send message">↑</button>
+    </form>
+    <p class="assistant-disclaimer">AI questions are sent to OpenAI for a reply. Navigation help only — not medical advice. Please don't share personal health details.</p>
+  </section>
+  </div>
 </body>
 </html>
