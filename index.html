@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="description" content="Find health facilities and explore reported services in Kenya." />
+  <title>Public Services Navigator | PSN</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script
+    defer
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="PSN home">
+      <span class="brand-icon">✚</span>
+      <span>PSN <small>Public Services Navigator</small></span>
+    </a>
+    <div class="topbar-actions">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
+      <span class="status"><span></span> Community health directory</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">HEALTHCARE ACCESS IN KENYA</p>
+      <h1>Find the care you need.</h1>
+      <p class="hero-copy">
+        Discover nearby health facilities, explore their services,
+        and check recent community reports before travelling.
+      </p>
+
+      <form id="search-form" class="search-bar" autocomplete="off">
+        <span aria-hidden="true">⌕</span>
+        <div class="search-field">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Search facility, area or service..."
+            aria-label="Search health facilities"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="search-suggestions"
+          />
+          <ul id="search-suggestions" class="search-suggestions" hidden></ul>
+        </div>
+        <button type="submit">Search</button>
+      </form>
+
+      <p class="demo-note">
+        Demonstration data only. Confirm facility details before travelling.
+      </p>
+    </section>
+
+    <section class="stats" aria-label="Directory summary">
+      <article class="stat-card">
+        <span class="stat-icon">⌖</span>
+        <div><strong id="facility-count">0</strong><span>Facilities shown</span></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon">♡</span>
+        <div><strong id="service-count">0</strong><span>Service categories</span></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon">◷</span>
+        <div><strong id="report-count">0</strong><span>Community reports</span></div>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <aside class="sidebar">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">DIRECTORY</p>
+            <h2>Health facilities</h2>
+          </div>
+          <button id="clear-filters" class="text-button" type="button">Reset</button>
+        </div>
+
+        <label class="field-label" for="service-filter">Filter by service</label>
+        <select id="service-filter">
+          <option value="">All services</option>
+          <option value="Outpatient">Outpatient</option>
+          <option value="Maternity">Maternity</option>
+          <option value="Laboratory">Laboratory</option>
+          <option value="Pharmacy">Pharmacy</option>
+          <option value="Emergency">Emergency</option>
+          <option value="Immunization">Immunization</option>
+        </select>
+
+        <label class="field-label" for="type-filter">Facility type</label>
+        <select id="type-filter">
+          <option value="">All facility types</option>
+          <option value="Hospital">Hospital</option>
+          <option value="Health Centre">Health Centre</option>
+          <option value="Dispensary">Dispensary</option>
+        </select>
+
+        <div class="filter-actions">
+          <button id="nearest-toggle" class="secondary-button" type="button">Nearest first</button>
+          <button id="locate-button" class="location-button" type="button">
+            ◎ Find facilities near me
+          </button>
+        </div>
+        <p id="location-message" class="small-note" aria-live="polite">
+          Allow location access when your browser asks.
+        </p>
+
+        <div class="list-heading">
+          <h3>Available facilities</h3>
+          <span id="result-count">0 results</span>
+        </div>
+
+        <div id="facility-list" class="facility-list"></div>
+        <p id="empty-state" class="empty-state" hidden>
+          No facilities match your search. Try changing your filters.
+        </p>
+      </aside>
+
+      <section class="map-panel">
+        <div class="map-heading">
+          <div>
+            <h2>Explore the map</h2>
+            <p>Select a marker or facility to view details.</p>
+          </div>
+          <span class="map-badge">Nairobi demo</span>
+        </div>
+        <div id="map" role="application" aria-label="Map of demonstration health facilities"></div>
+        <div class="map-footer">
+          <span><span class="legend-dot"></span> Demonstration facility</span>
+          <span>Map © OpenStreetMap contributors</span>
+        </div>
+      </section>
+    </section>
+
+    <section class="report-section">
+      <div>
+        <p class="eyebrow">COMMUNITY CONTRIBUTIONS</p>
+        <h2>Share a service update</h2>
+        <p>
+          Help other people by reporting what you observed at a facility.
+          Reports are community-submitted and are not official confirmation.
+        </p>
+      </div>
+
+      <form id="report-form" class="report-form">
+        <label class="field-label" for="report-facility">Facility</label>
+        <select id="report-facility" required>
+          <option value="">Select a facility</option>
+        </select>
+
+        <label class="field-label" for="report-service">Service</label>
+        <select id="report-service" required>
+          <option value="">Select a service</option>
+          <option>Outpatient</option>
+          <option>Maternity</option>
+          <option>Laboratory</option>
+          <option>Pharmacy</option>
+          <option>Emergency</option>
+          <option>Immunization</option>
+        </select>
+
+        <label class="field-label" for="report-status">What did you observe?</label>
+        <select id="report-status" required>
+          <option value="">Select an observation</option>
+          <option value="available">Service reported available</option>
+          <option value="unavailable">Service reported unavailable</option>
+        </select>
+
+        <button type="submit">Submit community report</button>
+        <p id="report-message" class="small-note" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <span>PSN · Public Services Navigator</span>
+      <span>Prototype for healthcare access in Kenya</span>
+    </footer>
+  </main>
+
+  <dialog id="facility-dialog" class="facility-dialog">
+    <button id="close-dialog" class="close-button" type="button" aria-label="Close details">×</button>
+    <div id="facility-details"></div>
+  </dialog>
+</body>
+</html>
