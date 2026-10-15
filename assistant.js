@@ -8,13 +8,18 @@
   const input = document.getElementById("assistant-input");
   const messages = document.getElementById("assistant-messages");
   const status = document.getElementById("assistant-status");
+  const disclaimer = document.getElementById("assistant-disclaimer");
   const sendButton = form.querySelector("button");
 
   function setAssistantMode(authenticated) {
     const configured = Boolean(window.PSN_CONFIG.supabaseUrl && window.PSN_CONFIG.supabaseAnonKey);
-    status.textContent = configured && authenticated
+    const aiEnabled = configured && authenticated;
+    status.textContent = aiEnabled
       ? "AI-powered navigation help"
-      : "Quick help for using this directory";
+      : "Built-in navigation guide";
+    disclaimer.textContent = aiEnabled
+      ? "Your question is sent to OpenAI for a reply. Navigation only — not medical advice. Please don't share personal health details."
+      : "Quick help from the built-in guide. Sign in and connect AI to enable generated replies. Navigation only — not medical advice. Please don't share personal health details.";
   }
 
   function addMessage(text, isReply) {
